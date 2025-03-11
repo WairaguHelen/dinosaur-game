@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 
 # Initialize pygame
 pygame.init()
@@ -121,13 +122,57 @@ class Dinosaur:
     def draw(self, screen):
         screen.blit(self.image, (self.dino_rect.x, self.dino_rect.y))
 
+class Cloud:
+    def __init__(self):
+        self.x = screen_width + random.randint(800, 1000)
+        self.y = random.randint(50, 100)
+        self.image = CLOUD
+        self.width = self.image.get_width()
+    
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+        self.x -= game_speed
+    
+    def update(self):
+        self.x -= game_speed
+        if self.x < -self.width:
+            self.x = screen_width + random.randint(2500, 3000)
+            self.y = random.randint(50, 100)
 def main():
+    global game_speed, x_pos_bg, y_pos_bg, points
     run = True
     clock = pygame.time.Clock()
     player = Dinosaur()
+    cloud = Cloud()
+    game_speed = 14
+    x_pos_bg = 0
+    y_pos_bg = 380
+    points = 0
+    font = pygame.font.SysFont('Arial', 20)
+
+    def score():
+        global points, game_speed
+        points += 1
+        if points % 100 == 0:
+            game_speed += 1
+        
+        text = font.render(f"Score: {points}", True, (0, 0, 0))
+        textRect = text.get_rect()
+        textRect.center = (800, 50)
+        screen.blit(text, textRect)
+
+    def background():
+        global x_pos_bg, y_pos_bg
+        image_width = BG.get_width()
+        screen.blit(BG, (x_pos_bg, y_pos_bg))
+        screen.blit(BG, (image_width + x_pos_bg, y_pos_bg))
+        if x_pos_bg <= -image_width:
+            screen.blit(BG, (image_width + x_pos_bg, y_pos_bg))
+            x_pos_bg = 0
+        x_pos_bg -= game_speed 
 
     while run:
-        clock.tick(60)
+        clock.tick(30)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -138,6 +183,13 @@ def main():
 
         player.draw(screen)
         player.update(userInput)
+
+        background()
+        score()
+
+        cloud.draw(screen)
+        cloud.update()
+
         pygame.display.update()
 
 if __name__ == "__main__":
