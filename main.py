@@ -4,6 +4,7 @@ import random
 
 # -- Initialize pygame --------------------------------
 pygame.init()
+pygame.mixer.init()
  
 # -- Screen Setup --------------------------------
 WIDTH = 1100
@@ -16,6 +17,10 @@ font = pygame.font.SysFont("Courier New", 48, bold=True)  # Using a built-in fon
 # Render text
 title_text = font.render("The Super Dino", True, (0, 0, 0))  
 
+# -- Loading game sounds --------------------------------
+jump_sound = pygame.mixer.Sound(os.path.join("Assets/sounds/jump.wav"))
+death_sound = pygame.mixer.Sound(os.path.join("Assets/sounds/die.wav"))
+score_sound = pygame.mixer.Sound(os.path.join("Assets/sounds/point.wav"))
 
 # -- Loading game images --------------------------------
 RUNNING = [
@@ -104,6 +109,7 @@ class Dinosaur:
             self.dino_jump = True
             self.dino_duck = False
             self.dino_run = False
+            jump_sound.play()
         elif userInput[pygame.K_DOWN] and not self.dino_jump:
             self.dino_duck = True
             self.dino_run = False
@@ -224,6 +230,7 @@ def main():
         points += 1
         if points % 100 == 0:
             game_speed += 1
+            score_sound.play()
         if points > high_score:
             high_score = points
             save_high_score(high_score)
@@ -273,7 +280,8 @@ def main():
             if obstacle.rect.x < -obstacle.rect.width:
                 obstacles.remove(obstacle)
             if player.dino_rect.colliderect(obstacle.rect):
-                pygame.time.delay(500)
+                death_sound.play()
+                pygame.time.delay(1000)
                 menu(death_count + 1, points)
                 return 
 
