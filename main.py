@@ -47,7 +47,7 @@ LARGE_CACTUS = [
     pygame.image.load(os.path.join("Assets/Cactus/LargeCactus3.png"))
 ]
 
-BIRD = [
+SPAWN = [
     pygame.image.load(os.path.join("Assets/Bird/Bird1.png")),
     pygame.image.load(os.path.join("Assets/Bird/Bird2.png"))
 ]
@@ -193,7 +193,7 @@ class largeCactus(Obstacles):
         super().__init__(image, self.type)
         self.rect.y = 300
 
-class Bird(Obstacles):
+class Spawn(Obstacles):
     def __init__(self, image):
         self.type = 0
         super().__init__(image, self.type)
@@ -272,7 +272,7 @@ def main():
             elif rand_choice in [2, 3]:
                 obstacles.append(largeCactus(LARGE_CACTUS))
             else:
-               obstacles.append(Bird(BIRD))
+               obstacles.append(Spawn(SPAWN))
         
         for obstacle in obstacles[:]:
             obstacle.draw(screen)
