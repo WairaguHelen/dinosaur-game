@@ -2,50 +2,68 @@ import pygame
 import os
 import random
 
-# Initialize pygame
+# -- Initialize pygame --------------------------------
 pygame.init()
+ 
+# -- Screen Setup --------------------------------
+WIDTH = 1100
+HEIGHT = 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("THE SUPER DINO") 
 
-# Set up the screen
-screen_width = 1100
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("The Super Dino")
+font = pygame.font.SysFont("Courier New", 48, bold=True)  # Using a built-in font
 
-# Load images
+# Render text
+title_text = font.render("The Super Dino", True, (0, 0, 0))  
+
+
+# -- Loading game images --------------------------------
 RUNNING = [
-    pygame.image.load(os.path.join("Assets/Dino", "DinoRun1.png")),
-    pygame.image.load(os.path.join("Assets/Dino", "DinoRun2.png"))
+    pygame.image.load(os.path.join("Assets/Dino/DinoRun1.png")),
+    pygame.image.load(os.path.join("Assets/Dino/DinoRun2.png"))
 ]
 
-JUMPING = pygame.image.load(os.path.join("Assets/Dino", "DinoJump.png"))
+JUMPING = pygame.image.load(os.path.join("Assets/Dino/DinoJump.png"))
 
 DUCKING = [
-    pygame.image.load(os.path.join("Assets/Dino", "DinoDuck1.png")),
-    pygame.image.load(os.path.join("Assets/Dino", "DinoDuck2.png"))
+    pygame.image.load(os.path.join("Assets/Dino/DinoDuck1.png")),
+    pygame.image.load(os.path.join("Assets/Dino/DinoDuck2.png"))
 ]
 
 SMALL_CACTUS = [
-    pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus1.png")),
-    pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus2.png")),
-    pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus3.png"))
+    pygame.image.load(os.path.join("Assets/Cactus/SmallCactus1.png")),
+    pygame.image.load(os.path.join("Assets/Cactus/SmallCactus2.png")),
+    pygame.image.load(os.path.join("Assets/Cactus/SmallCactus3.png"))
 ]
 
 LARGE_CACTUS = [
-    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus1.png")),
-    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus2.png")),
-    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus3.png"))
+    pygame.image.load(os.path.join("Assets/Cactus/LargeCactus1.png")),
+    pygame.image.load(os.path.join("Assets/Cactus/LargeCactus2.png")),
+    pygame.image.load(os.path.join("Assets/Cactus/LargeCactus3.png"))
 ]
 
 BIRD = [
-    pygame.image.load(os.path.join("Assets/Bird", "Bird1.png")),
-    pygame.image.load(os.path.join("Assets/Bird", "Bird2.png"))
+    pygame.image.load(os.path.join("Assets/Bird/Bird1.png")),
+    pygame.image.load(os.path.join("Assets/Bird/Bird2.png"))
 ]
 
-CLOUD = pygame.image.load(os.path.join("Assets/Other", "Cloud.png"))
+CLOUD = pygame.image.load(os.path.join("Assets/Other/Cloud.png"))
 
-BG = pygame.image.load(os.path.join("Assets/Other", "Track.png"))
+BG = pygame.image.load(os.path.join("Assets/Other/Track.png"))
 
-# Game loop
+# -- Initializing high score --------------------------------
+def load_high_score():
+    try:
+        with open("highscore.txt", "r") as file:
+            return int(file.read())
+    except (FileNotFoundError, ValueError):
+        return 0
+
+def save_high_score(score):
+    with open("highscore.txt", "w") as file:
+        file.write(str(score))
+
+# -- The game loop --------------------------------
 class Dinosaur:
     x_pos = 80
     y_pos = 310
@@ -54,7 +72,6 @@ class Dinosaur:
     dino_duck_time = 0
     dino_duck_time_limit = 20
     dino_duck_timer = 0
-
 
     def __init__(self):
         self.duck_img = DUCKING
@@ -71,7 +88,7 @@ class Dinosaur:
         self.dino_rect = self.image.get_rect()
         self.dino_rect.x = self.x_pos
         self.dino_rect.y = self.y_pos
-    
+
     def update(self, userInput):
         if self.dino_duck:
             self.duck()
@@ -102,7 +119,7 @@ class Dinosaur:
         self.dino_rect.x = self.x_pos
         self.dino_rect.y = self.y_pos
         self.step_index += 1
-    
+
     def jump(self):
         self.image = self.jump_img
         if self.dino_jump:
@@ -122,9 +139,10 @@ class Dinosaur:
     def draw(self, screen):
         screen.blit(self.image, (self.dino_rect.x, self.dino_rect.y))
 
+# -- Adding clouds --------------------------------
 class Cloud:
     def __init__(self):
-        self.x = screen_width + random.randint(800, 1000)
+        self.x = WIDTH + random.randint(800, 1000)
         self.y = random.randint(50, 100)
         self.image = CLOUD
         self.width = self.image.get_width()
@@ -136,19 +154,20 @@ class Cloud:
     def update(self):
         self.x -= game_speed
         if self.x < -self.width:
-            self.x = screen_width + random.randint(2500, 3000)
+            self.x = WIDTH + random.randint(2500, 3000)
             self.y = random.randint(50, 100)
 
+# -- Adding obstacles ----------------------------------------------------------------
 class Obstacles:
     def __init__(self, image, type):
-        #self.x = screen_width + random.randint(800, 1000)
+        #self.x = WIDTH + random.randint(800, 1000)
         #self.y = random.randint(200, 350)
         self.image = image
         #self.width = self.image.get_width()
         self.type = type
         self.rect = self.image[self.type].get_rect()
         #self.rect.x = 1100
-        self.rect.x = screen_width
+        self.rect.x = WIDTH
     
     def update(self):
         self.rect.x -= game_speed
@@ -181,31 +200,34 @@ class Bird(Obstacles):
         self.index += 1  
         if self.index >= 10: 
             self.index = 0  
-
     def draw(self, screen):
         screen.blit(self.image[self.index // 5], self.rect) 
 
+# -- Main function --------------------------------
 def main():
-    global game_speed, x_pos_bg, y_pos_bg, points, obstacles
+    global game_speed, x_pos_bg, y_pos_bg, points, high_score
     run = True
     clock = pygame.time.Clock()
     player = Dinosaur()
-    cloud = Cloud()
     game_speed = 14
     x_pos_bg = 0
     y_pos_bg = 380
     points = 0
-    font = pygame.font.SysFont('Arial', 20)
+    high_score = load_high_score()
+    font = pygame.font.SysFont("Courier New", 24, bold=True)
     obstacles = []
     death_count = 0
+    cloud = Cloud()  
 
     def score():
-        global points, game_speed
+        global points, game_speed, high_score
         points += 1
         if points % 100 == 0:
             game_speed += 1
-        
-        text = font.render(f"Score: {points}", True, (0, 0, 0))
+        if points > high_score:
+            high_score = points
+            save_high_score(high_score)
+        text = font.render(f"Score: {points}  High Score: {high_score}", True, (0, 0, 0))
         textRect = text.get_rect()
         textRect.center = (800, 50)
         screen.blit(text, textRect)
@@ -245,47 +267,54 @@ def main():
             else:
                obstacles.append(Bird(BIRD))
         
-        #if player.dino_rect.y < -50 or player.dino_rect.y > screen_height - player.dino_rect.height:
-        #    run = False
-         #   print("Game Over!")
-          #  print(f"Your score: {points}")
-
-        
         for obstacle in obstacles[:]:
             obstacle.draw(screen)
             obstacle.update()
             if obstacle.rect.x < -obstacle.rect.width:
                 obstacles.remove(obstacle)
             if player.dino_rect.colliderect(obstacle.rect):
-                pygame.time.delay(1000)
-                death_count += 1
-                menu(death_count)
+                pygame.time.delay(500)
+                menu(death_count + 1, points)
+                return 
 
         cloud.draw(screen)
         cloud.update()
 
         pygame.display.update()
 
-def menu(death_count):
-    global points
+# -- Death Menu --------------------------------
+def menu(death_count, last_score=0):
+    global points, high_score
+    high_score = load_high_score()
     run = True
+
     while run:
-        screen.fill((255, 255, 255))
-        font = pygame.font.SysFont('Arial', 20)
+        screen.fill((38, 42, 55))
+        font = pygame.font.SysFont("Courier New", 24, bold=True)
+        game_over_font = pygame.font.Font("Assets/fonts/Silkscreen-Regular.ttf", 60)
 
         if death_count == 0:
-            text = font.render("Welcome to Super Dino. Press any key to start", True, (0, 0, 0))
+            text = font.render("Welcome to Super Dino. Press any key to start", True, (254, 254, 254))
+            high_score = 0
+            save_high_score(high_score)
+            
         elif death_count > 0:
-            text = font.render(f"Game Over! Press any key to restart", True, (0, 0, 0))
-            score = font.render(f"Your score: {points}", True, (0, 0, 0))
+            high_score = load_high_score()
+            text = game_over_font.render(f"GAME OVER!", True, (254, 254, 254))
+            score = font.render(f"Your score: {last_score}", True, (254, 254, 254))
+            high_score = font.render(f"High Score: {high_score}", True, (254, 254, 254))
             scoreRect = score.get_rect()
-            #scoreRect.center = (800, 50)
-            scoreRect.center = (screen_width // 2, screen_height // 2 + 50)
+            scoreRect.center = (800, 50)
+            scoreRect.center = (WIDTH // 2, HEIGHT // 2 + 50)
+            high_scoreRect = high_score.get_rect()
+            high_scoreRect.center = (800, 50)
             screen.blit(score, scoreRect)
+            screen.blit(high_score, (WIDTH // 2 - 50, HEIGHT // 2 + 90))
         textRect = text.get_rect()
-        textRect.center = (screen_width // 2, screen_height // 2)
+        textRect.center = (WIDTH // 2, HEIGHT // 2)
         screen.blit(text, textRect)
-        screen.blit(RUNNING[0], (screen_width // 2 - 20, screen_height // 2 - 140))
+        screen.blit(RUNNING[0], (WIDTH // 2 - 20, HEIGHT // 2 - 140))
+
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
