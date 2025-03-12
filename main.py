@@ -138,8 +138,55 @@ class Cloud:
         if self.x < -self.width:
             self.x = screen_width + random.randint(2500, 3000)
             self.y = random.randint(50, 100)
+
+class Obstacles:
+    def __init__(self, image, type):
+        #self.x = screen_width + random.randint(800, 1000)
+        #self.y = random.randint(200, 350)
+        self.image = image
+        #self.width = self.image.get_width()
+        self.type = type
+        self.rect = self.image[self.type].get_rect()
+        #self.rect.x = 1100
+        self.rect.x = screen_width
+    
+    def update(self):
+        self.rect.x -= game_speed
+
+    def draw(self, screen):
+        screen.blit(self.image[self.type], self.rect)
+
+class smallCactus(Obstacles):
+    def __init__(self, image):
+        self.type = random.randint(0, 2)
+        super().__init__(image, self.type)
+        self.rect.y = 330
+
+class largeCactus(Obstacles):
+    def __init__(self, image):
+        self.type = random.randint(0, 2)
+        super().__init__(image, self.type)
+        self.rect.y = 300
+
+class Bird(Obstacles):
+    def __init__(self, image):
+        self.type = 0
+        super().__init__(image, self.type)
+        self.rect.y = random.choice([200, 250, 300])  
+        self.index = 0 
+
+    def update(self):
+        self.rect.x -= game_speed  
+        self.rect.y += random.randint(-10, 10) 
+        self.index += 1  
+        if self.index >= 10: 
+            self.index = 0  
+
+    def draw(self, screen):
+        screen.blit(self.image[self.index // 5], self.rect) 
+
 def main():
-    global game_speed, x_pos_bg, y_pos_bg, points
+    global game_speed, x_pos_bg, y_pos_bg, points, obstacles
     run = True
     clock = pygame.time.Clock()
     player = Dinosaur()
@@ -149,6 +196,7 @@ def main():
     y_pos_bg = 380
     points = 0
     font = pygame.font.SysFont('Arial', 20)
+    obstacles = []
 
     def score():
         global points, game_speed
@@ -186,6 +234,29 @@ def main():
 
         background()
         score()
+
+        if len(obstacles) == 0:
+            rand_choice = random.randint(0, 4)
+            if rand_choice in [0, 1]:
+                obstacles.append(smallCactus(SMALL_CACTUS))
+            elif rand_choice in [2, 3]:
+                obstacles.append(largeCactus(LARGE_CACTUS))
+            else:
+               obstacles.append(Bird(BIRD))
+        
+        #if player.dino_rect.y < -50 or player.dino_rect.y > screen_height - player.dino_rect.height:
+        #    run = False
+         #   print("Game Over!")
+          #  print(f"Your score: {points}")
+
+        
+        for obstacle in obstacles[:]:
+            obstacle.draw(screen)
+            obstacle.update()
+            if obstacle.rect.x < -obstacle.rect.width:
+                obstacles.remove(obstacle)
+            if player.dino_rect.colliderect(obstacle.rect):
+                pygame.draw.rect(screen, (255, 0, 0), player.dino_rect, 2)
 
         cloud.draw(screen)
         cloud.update()
